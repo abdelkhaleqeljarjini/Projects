@@ -21,10 +21,10 @@ NUM_EPOCHS = 100
 BATCH_SIZE = 32
 NUM_CORES = 0
 
-my_path = "C:\\Users\\Abde\Desktop\Deep Learning\SemEval Project\\"
+my_path = "path"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-df = pd.read_csv(my_path+"train_subtask1.csv")
+df = pd.read_csv(my_path+"file.csv")
 df['x'] = df.iloc[:,[0,2,3,4]].astype(str).agg('[SEP]'.join,axis=1)
 
 train, test, y_train, y_test = train_test_split(df[['x','valence']], df[['valence']],
@@ -59,8 +59,6 @@ while epochs_without_improvement<20 and epoch<NUM_EPOCHS:
                          lr=L_RATE,
                          eps=1e-8)
     else:
-        # model_path = 'model_epoch'+'.bin'
-        # model.load_state_dict(torch.load(model_path))
         model.to(device)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=BATCH_SIZE,
@@ -74,7 +72,6 @@ while epochs_without_improvement<20 and epoch<NUM_EPOCHS:
 
     for i, batch in enumerate(train_dataloader):
 
-        # print('Batch '+str(i+1)+'/'+str(len(train_dataloader)))
         input_ids = batch[0].to(device)
         attention_mask = batch[1].to(device)
         token_type_ids = batch[2].to(device)
@@ -90,10 +87,7 @@ while epochs_without_improvement<20 and epoch<NUM_EPOCHS:
         total_train_loss.append(loss.item())
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
-        # torch.nn.utils.clip_grad_norm_(model.parameters(),1.0)
         optimizer.step()
-        # xm.optimizer_step(optimizer, barrier=True)
-        # torch_xla.optimizer_step(optimizer, barrier=True)
     print('Validation...')
     gc.collect()
     torch.set_grad_enabled(False)
@@ -120,8 +114,6 @@ while epochs_without_improvement<20 and epoch<NUM_EPOCHS:
         val_labels = labels.detach().cpu().numpy()
         labels_list.extend(val_labels)
         preds_list.extend(val_preds)
-        # del input_ids, attention_mask, token_type_ids, labels
-        # gc.collect()
     current_train_loss = sum(total_train_loss)/len(total_train_loss)
     current_val_loss = sum(total_val_loss)/len(total_val_loss)
     print('train loss',current_train_loss)
@@ -133,4 +125,5 @@ while epochs_without_improvement<20 and epoch<NUM_EPOCHS:
     epoch_val_loss.append(current_val_loss)
     model_name = my_path + 'model_weights'+'.pth'
     torch.save(model.state_dict(), model_name)
+
     epoch+=1
