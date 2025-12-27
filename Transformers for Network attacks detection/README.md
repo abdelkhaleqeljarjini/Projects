@@ -1,4 +1,4 @@
-# Transformer Architecture For Classification of Network Attacks
+# Transformer Architecture For Network Attacks Detection
 
 ## Overview
 
@@ -8,6 +8,7 @@ In this project we introduced a new approach for network attacks detection based
 * No pretrained model was used
 * Features concatenated into 1 input sequence
 * Multi Head Attention
+* Classification: normal activity or network attack
 
 ## Model Architecture:
 
