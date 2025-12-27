@@ -25,7 +25,7 @@ dropout = 0.2
 NUM_CORES = os.cpu_count()
 
 #Data path
-path = ''
+path = '' # Math for the data files
 
 #Device
 device  = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -44,8 +44,6 @@ class TrainDataset(Dataset):
 
     def __getitem__(self,index):
 
-        # batch = []
-        # for index in idx:
         text = self.df.iloc[index]['x']
         #tokenizing the data
         encoded_dict = tokenizer.encode_plus(
@@ -97,6 +95,7 @@ class MultiHA(nn.Module):
   @staticmethod
   def resize(x, batch, seq_len, num_heads, hs):
     return x.view(batch,seq_len, num_heads, hs ).transpose(1,2)
+
 #Feed Forward block 
 class FeedForward(nn.Module):
 
@@ -239,7 +238,7 @@ df_gl_test = pd.read_csv(path)
 df_gl_test = df_gl_test.reset_index(drop=True)
 test_loader = DataLoader(TrainDataset(df_gl_test),batch_size=BATCH_SIZE,
                                           shuffle=True,num_workers=NUM_CORES)
-test_out = {}
+test_out = {} # to be able to save the pres at the end
 for i, batch in enumerate(test_loader):
   if i%200==0:print(f'Batch: {i}')
   input_ids = batch[0].to(device)
@@ -255,7 +254,7 @@ for i, batch in enumerate(test_loader):
     test_out['preds'] = torch.cat((test_out['preds'],outputs['logits'].detach().cpu()), dim=0)
     test_out['labels'] = torch.cat((test_out['labels'],targets), dim=0)
 
-preds = torch.argmax(test_out['preds'], dim=1).numpy()
+preds = torch.argmax(test_out['preds'], dim=1).numpy() # getting the predicted class
 
 # Confusion matrix
 cm = confusion_matrix(test_out['labels'], preds)
@@ -263,4 +262,5 @@ cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] #For normalization
 labels = np.array(['Normal','Attack'])
 cm_display = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=labels)
 cm_display.plot(values_format=".4f",cmap='viridis')
+
 plt.show()
