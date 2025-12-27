@@ -11,7 +11,7 @@ In this project we introduced a new approach for network attacks detection based
 
 ## Model Architecture:
 
-<img src="Docs/Images/model-architecture.svg" alt="Architecture Diagram" width="50%" height="50%">
+<img src="Docs/Images/model-architecture.svg" alt="Architecture Diagram" width="40%" height="40%">
 
 ### Input
 The input x is all the input features concatenated into one sequence separated by a special character [SEP].
@@ -50,6 +50,9 @@ We tested the model on 250 k samples, below the evaluation metrics:
 * Precision: 99.47%
 * True positive rate: 99.84%
 * False positive rate: 0.21%
+### Confusion Matrix
+
+<img src="Docs/Images/Confusion matrix.png" alt="cm" width="50%" height="50%">
 
 In the test data there is 42 588 attacks, the model was able to detect 99.90% of them, only 42 of them were not detected. On the other hand, among 214 069 normal activities 99.79% of them were properly classified as normal by the model, only 446 (0.21%) were misclassified as attacks.
 
