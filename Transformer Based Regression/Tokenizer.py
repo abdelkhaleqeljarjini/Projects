@@ -4,7 +4,7 @@ class RLLMTokenizer:
 
   def __init__(self,space):
     self.exp_tokens = self.list_exponents(space)
-    self.vocab_size = len(self.exp_tokens)+12
+    self.vocab_size = len(self.exp_tokens)+10
 
   def list_exponents(self,s):
 
@@ -19,6 +19,7 @@ class RLLMTokenizer:
       exp_tokens[i] = 12 + it
       it += 1
     exp_tokens['[START]']=max(exp_tokens.values())+1
+    exp_tokens['[SEP]']=max(exp_tokens.values())+1
     return exp_tokens
 
   def get_exp_id(self,exp):
@@ -53,6 +54,7 @@ class RLLMTokenizer:
 
     # ----- compute mantissa (num_digits default value 3 digits) -----
     mantissa = digits[:num_digits]              # exactly 3 digits
+    # mantissa_tokens = list(mantissa.encode("utf-8"))
     mantissa_tokens = [int(i) for i in mantissa]
 
     # ----- compute exponent -----
@@ -64,6 +66,22 @@ class RLLMTokenizer:
 
     # ----- final tokens -----
     return torch.tensor(mantissa_tokens + [exp_id],dtype=torch.int64)
+  # encoding 2 inputs
+  def encode_plus(self,v,a):
+    ev = self.encode(v)
+    ea = self.encode(a)
+    es = self.exp_tokens['[SEP]']
+    return torch.tensor(ev.tolist() + [es ]+ ea.tolist()[1:],dtype=torch.long)
+  # decoding 2 inputs
+  def decode_plus(self,tokens):
+    if tokens is None:
+      return None
+    if not isinstance(tokens, list):
+      tokens = tokens.tolist()
+    v,a = tokens[:6], ['[START]'] + tokens[7:]
+    v = self.decode(v)
+    a = self.decode(a)
+    return v, a
 
   def decode(self, tokens=None):
     if tokens is None:
