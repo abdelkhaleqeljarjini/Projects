@@ -2,6 +2,7 @@ import os
 import gc
 import torch
 import pandas as pd
+import random as rd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,6 +16,7 @@ from Dataloader import TrainDataset
 from Model import RegressionLLM
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 
+MODEL_NAME = 'bert-base-uncased'
 L_RATE = 1e-5
 MAX_LEN = 12
 MAX_LEN_E = 512
@@ -25,6 +27,8 @@ dropout = 0.2
 num_heads = 12
 n_blocks = 2
 d = 768
+vse = AutoTokenizer.from_pretrained(MODEL_NAME).vocab_size
+vs = RLLMTokenizer(100).vocab_size
 
 my_path = "path"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -63,6 +67,7 @@ val_dataset = DatasetTS(val,MODEL_NAME)
 epoch_val_loss=[]
 epoch_train_loss=[]
 epoch=0
+model = RegressionLLM(vse=vse, d=d, vs=vs, max_len=MAX_LEN,max_len_enc=MAX_LEN_E,num_heads=num_heads,dropout=dropout,n_blocks=n_blocks)
 while epoch<NUM_EPOCHS:
     print('======== Epoch {:} / {:} ========'.format(epoch+1, NUM_EPOCHS))
 
@@ -93,7 +98,7 @@ while epoch<NUM_EPOCHS:
         pad_mask_ts = batch[4]
 
         outputs = model(
-            idx_e=input_ids,
+            idxe=input_ids,
             attention_mask=attention_mask,
             idx=input_y,
             targets=labels,
@@ -122,7 +127,7 @@ while epoch<NUM_EPOCHS:
         pad_mask_ts = batch[4]
 
         outputs = model(
-            idx_e=input_ids,
+            idxe=input_ids,
             attention_mask=attention_mask,
             idx=input_y,
             targets=labels,
@@ -144,6 +149,3 @@ while epoch<NUM_EPOCHS:
     model_name = my_path + 'model_weights.pth'
     torch.save(checkpoints, model_name)
     epoch+=1
-
-
-
