@@ -22,6 +22,9 @@ NUM_EPOCHS = 100
 BATCH_SIZE = 32
 NUM_CORES = 0
 dropout = 0.2
+num_heads = 12
+n_blocks = 2
+d = 768
 
 my_path = "path"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -141,5 +144,6 @@ while epoch<NUM_EPOCHS:
     model_name = my_path + 'model_weights.pth'
     torch.save(checkpoints, model_name)
     epoch+=1
+
 
 
