@@ -56,27 +56,35 @@ Each `Block` combines an encoder and a decoder with multiple attention mechanism
 
 ## Model Architecture Diagram
 
-The following diagram represents the internal data flow of a single `Block`.
-
 ```mermaid
-flowchart TD
-    A[t_emb<br/>Token Embeddings] --> B[EncoderRLLM]
-    B --> C[Encoder Output<br/>(B × T × d)]
+flowchart LR
 
-    C --> D[Mean Pooling<br/>over T]
-    D --> E[Temporal Multi-Head Attention<br/>(causal)]
-    E --> F[LayerNorm + Residual]
+  %% Inputs
+  T[text embedding] --> E0[EncoderRLLM]
+  Y[y] --> SA[Self_causal_Attention]
 
-    Y[y<br/>Decoder Input] --> G[Self Multi-Head Attention<br/>(causal)]
-    G --> H[LayerNorm + Residual]
+  %% Repeated block
+  subgraph B["Block × N"]
+    direction LR
 
-    F --> I[Cross Multi-Head Attention]
-    H --> I
-    I --> J[LayerNorm + Residual]
+    E0 --> P[Mean_Pooling]
+    P --> TA[Temporal_causal_Attention]
+    TA --> LN1[Add_LayerNorm]
 
-    J --> K[Feed Forward Network]
-    K --> L[LayerNorm + Residual]
+    SA --> LN2[Add_LayerNorm]
 
-    L --> M[y<br/>Updated Decoder State]
-    C --> N[t_emb<br/>Updated Encoder State]
+    LN1 --> CA[Cross_Attention]
+    LN2 --> CA
+    CA --> LN3[Add_LayerNorm]
+
+    LN3 --> FFN[Feed_Forward]
+    FFN --> LN4[Add_LayerNorm]
+  end
+
+  %% Outputs
+  LN4 --> O1[Linear]
+  O1 --> O2[Softmax]
+  O2 --> O3["probabilities over decoder vocab_size"]:::text
+  classDef text fill:none,stroke:none,color:#333;
+```
 
