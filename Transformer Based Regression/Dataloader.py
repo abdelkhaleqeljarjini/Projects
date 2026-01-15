@@ -6,8 +6,8 @@ from torch.utils.data import Dataset, DataLoader
 from Tokenizer import RLLMTokenizer
 
 MODEL_NAME = 'bert-base-uncased'
-MAX_LEN = 5
-MAX_LEN_E = 2000
+MAX_LEN = 12
+MAX_LEN_E = 512
 BATCH_SIZE = 32
 
 class DatasetTS(Dataset,AutoTokenizer,RLLMTokenizer):
@@ -50,3 +50,4 @@ def dynamic_collate_fn(batch):
   for t in b:
     batch += t
   return torch.stack([t[0] for t in batch]),torch.stack([t[1] for t in batch]),torch.stack([t[2] for t in batch]),torch.stack([t[3] for t in batch]),torch.stack([t[4] for t in batch])
+
