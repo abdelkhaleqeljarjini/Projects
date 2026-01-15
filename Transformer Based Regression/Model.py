@@ -8,7 +8,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #Multihead attention class
 class MultiHA(nn.Module):
-  def __init__(self, d, hs,causal_attention = False ,max_len=12,dropout=0.1):
+  def __init__(self, d, hs,dropout,max_len=None,causal_attention = False):
     super().__init__()
     self.causal_attention = causal_attention
     self.hs = hs
@@ -60,26 +60,26 @@ class FeedForward(nn.Module):
 #Encoder for the input text
 class EncoderRLLM(nn.Module):
 
-  def __init__(self, d,num_heads,max_len,dropout):
+  def __init__(self, d,num_heads,dropout):
     super().__init__()
-    self.self_ah = MultiHA(d,d//num_heads,max_len= max_len,dropout=dropout)
+    self.self_ah = MultiHA(d=d,hs=d//num_heads,dropout=dropout)
     self.ln1 =nn.LayerNorm(d)
     self.ln2 =nn.LayerNorm(d)
-    self.ffwd = FeedForward(d)
+    self.ffwd = FeedForward(d,dropout)
 
   def forward(self, t_emb, attention_mask):
-    x = self.ln1(x + self.self_ah(x,x,attention_mask))
-    x = self.ln2(x + self.ffwd(x))
-    return x
+    t_emb = self.ln1(t_emb + self.self_ah(t_emb,t_emb,attention_mask))
+    t_emb = self.ln2(t_emb + self.ffwd(t_emb))
+    return t_emb
   
 #Transformer block
 class Block(nn.Module):
   def __init__(self,d,num_heads,dropout):
     super().__init__()
-    self.encoder = EncoderRLLM(d,num_heads,max_len_e,dropout)
-    self.time_ah = MultiHA(d,d//num_heads,max_len=BATCH_SIZE,dropout=dropout)
-    self.cross_ah = MultiHA(d,d//num_heads,dropout=dropout)
-    self.self_ah = MultiHA(d,d//num_heads, causal_attention=True,max_len= MAX_LEN,dropout=dropout)
+    self.encoder = EncoderRLLM(d=d,num_heads=num_heads,dropout=dropout)
+    self.time_ah = MultiHA(d=d,hs=d//num_heads,causal_attention=True,max_len=BATCH_SIZE,dropout=dropout)
+    self.cross_ah = MultiHA(d=d,hs=d//num_heads,dropout=dropout)
+    self.self_ah = MultiHA(d=d,hs=d//num_heads, causal_attention=True,max_len= MAX_LEN,dropout=dropout)
     self.ln1 = nn.LayerNorm(d)
     self.ln2 = nn.LayerNorm(d)
     self.ln3 = nn.LayerNorm(d)
@@ -96,7 +96,7 @@ class Block(nn.Module):
     x = encoder.mean(1).view(1,B,d)
     x = self.ln1(x + self.time_ah(x,x,time_attention=pad_mask_ts))
     y = self.ln2(y + self.self_ah(y,y))
-    y = self.ln3(y + self.cross_ah(x,y))
+    y = self.ln3(y + self.cross_ah(x.view(B,1,d),y))
     y = self.ln4(y + self.ffwd(y))
     return {'t_emb':encoder,'y': y,'pad_mask_ts':pad_mask_ts,'pad_mask':pad_mask}
 
@@ -138,5 +138,4 @@ class RegressionLLM(nn.Module):
       idx = torch.cat((idx,id_next),dim=1)
       
     return idx
-
 
