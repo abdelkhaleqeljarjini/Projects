@@ -13,6 +13,7 @@ from Tokenizer import RLLMTokenizer
 from sklearn.model_selection import train_test_split
 from Dataloader import TrainDataset
 from Model import RegressionLLM
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 
 L_RATE = 1e-5
 MAX_LEN = 12
@@ -139,3 +140,4 @@ while epoch<NUM_EPOCHS:
     model_name = my_path + 'model_weights.pth'
     torch.save(checkpoints, model_name)
     epoch+=1
+
