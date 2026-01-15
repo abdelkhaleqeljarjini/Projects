@@ -1,12 +1,7 @@
-import os
-import torch
-import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import transformers
-from torch.utils.data import Dataset, DataLoader
-from torch.optim import AdamW
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -143,4 +138,5 @@ class RegressionLLM(nn.Module):
       idx = torch.cat((idx,id_next),dim=1)
       
     return idx
+
 
